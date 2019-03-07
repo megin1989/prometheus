@@ -1,36 +1,36 @@
 # Metric query_result_user_registration_details
 - user_registration_details:
-sql: >
-	SELECT
-			GROUP_CONCAT(DISTINCT (CASE WHEN meta_key = 'first_name' AND meta_value IS NOT NULL THEN meta_value ELSE '' END) SEPARATOR ' ') AS 'First Name',
-			GROUP_CONCAT(DISTINCT (CASE WHEN meta_key = 'last_name' AND meta_value IS NOT NULL THEN meta_value ELSE '' END) SEPARATOR ' ') AS 'Last Name',
-			u.display_name AS 'Display Name',
-			GROUP_CONCAT(DISTINCT (CASE WHEN meta_key = 'wp_capabilities' AND meta_value IS NOT NULL THEN SUBSTRING_INDEX(SUBSTRING_INDEX(meta_value,';',1),':',-1) ELSE '' END) SEPARATOR ' ') AS 'Role',
-			u.user_registered AS 'Registration date' 
-	FROM wp_users u
-		RIGHT JOIN wp_usermeta um
-			ON u.ID = um.user_id
-	WHERE
-			DATE(u.user_registered) = CURDATE() AND
-			(um.meta_key = 'first_name' OR um.meta_key = 'last_name' OR um.meta_key = 'wp_capabilities') AND
-			u.user_status = 0 
-	GROUP BY
-            u.ID	
+  sql: >
+   SELECT
+         GROUP_CONCAT(DISTINCT (CASE WHEN meta_key = 'first_name' AND meta_value IS NOT NULL THEN meta_value ELSE '' END) SEPARATOR ' ') AS 'First Name',
+         GROUP_CONCAT(DISTINCT (CASE WHEN meta_key = 'last_name' AND meta_value IS NOT NULL THEN meta_value ELSE '' END) SEPARATOR ' ') AS 'Last Name',
+         u.display_name AS 'Display Name',
+         GROUP_CONCAT(DISTINCT (CASE WHEN meta_key = 'wp_capabilities' AND meta_value IS NOT NULL THEN SUBSTRING_INDEX(SUBSTRING_INDEX(meta_value,';',1),':',-1) ELSE '' END) SEPARATOR ' ') AS 'Role',
+         u.user_registered AS 'Registration date' 
+   FROM wp_users u
+         RIGHT JOIN wp_usermeta um
+           ON u.ID = um.user_id
+   WHERE
+         DATE(u.user_registered) = CURDATE() AND
+         (um.meta_key = 'first_name' OR um.meta_key = 'last_name' OR um.meta_key = 'wp_capabilities') AND
+         u.user_status = 0 
+   GROUP BY
+         u.ID	
 interval: 5m
 value-on-error: -1
 # Metric query_result_user_login_count
 - user_login_count:
 sql: >
-	SELECT
-			DATE(FROM_UNIXTIME(um.meta_value)) AS 'Login Date',
-			COUNT(DISTINCT um.user_id) AS 'No. of Logins' 
-	FROM wp_users u
-		INNER JOIN wp_usermeta um
-			ON u.ID = um.user_id
-	WHERE
-			um.meta_key = 'wp-last-login' AND
-			u.user_status = 0
-	GROUP BY
+    SELECT
+            DATE(FROM_UNIXTIME(um.meta_value)) AS 'Login Date',
+            COUNT(DISTINCT um.user_id) AS 'No. of Logins' 
+    FROM wp_users u
+        INNER JOIN wp_usermeta um
+            ON u.ID = um.user_id
+    WHERE
+            um.meta_key = 'wp-last-login' AND
+            u.user_status = 0
+    GROUP BY
             DATE(FROM_UNIXTIME(um.meta_value))
     ORDER BY
             DATE(FROM_UNIXTIME(um.meta_value)) DESC
@@ -39,33 +39,33 @@ value-on-error: -1
 # Metric query_result_user_login_details
 - user_login_details:
 sql: >
-	SELECT
-			u.display_name AS 'Name',
-			u.user_email AS 'Email' 
-	FROM wp_users u
-		INNER JOIN wp_usermeta um
-			ON u.ID = um.user_id
-	WHERE
-			um.meta_key = 'wp-last-login' AND
-			u.user_status = 0 AND
+    SELECT
+            u.display_name AS 'Name',
+            u.user_email AS 'Email' 
+    FROM wp_users u
+         INNER JOIN wp_usermeta um
+            ON u.ID = um.user_id
+    WHERE
+            um.meta_key = 'wp-last-login' AND
+            u.user_status = 0 AND
             DATE(FROM_UNIXTIME(um.meta_value)) = CURDATE()
 interval: 5m
 value-on-error: -1
 # Metric query_result_single_users_activity_tracking
 - single_users_activity_tracking:
 sql: >
-	SELECT
-			activity_description,
-			activity_data,
+    SELECT
+            activity_description,
+            activity_data,
             user_name,
             created_by,
             activity_seed_name,
             post_id,
             created_at
-	FROM onevoice_activity_updates
-	WHERE
-			( activity_seed_name != 'rareProfile_upload_photo' AND created_by = :created_by AND (group_id= 1 OR group_id=0))
-	ORDER BY 
+    FROM onevoice_activity_updates
+    WHERE
+            ( activity_seed_name != 'rareProfile_upload_photo' AND created_by = :created_by AND (group_id= 1 OR group_id=0))
+    ORDER BY 
             activity_id DESC
 interval: 5m
 params:
@@ -74,15 +74,15 @@ value-on-error: -1
 # Metric query_result_polls attended 
 - single_users_activity_tracking:
 sql: >
-	SELECT
-			qs.etext AS 'Poll',
-			 COUNT(v.poll_id) AS 'Poll Count'
-	FROM `wp_yoppoll_elements` qs
+    SELECT
+            qs.etext AS 'Poll',
+            COUNT(v.poll_id) AS 'Poll Count'
+    FROM `wp_yoppoll_elements` qs
         INNER JOIN wp_yoppoll_votes v
             ON qs.poll_id = v.poll_id
-	WHERE
-			qs.status != 'deleted'
-	GROUP BY
+    WHERE
+            qs.status != 'deleted'
+    GROUP BY
             v.poll_id
     ORDER BY
             v.added_date DESC
